@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package ingresscontroller
 
 import (
 	"fmt"
@@ -29,12 +29,12 @@ import (
 )
 
 // Name returns the healthcheck name
-func (n *NGINXController) Name() string {
+func (n *IngressController) Name() string {
 	return "nginx-ingress-controller"
 }
 
 // Check returns if the nginx healthz endpoint is returning ok (status code 200)
-func (n *NGINXController) Check(_ *http.Request) error {
+func (n *IngressController) Check(_ *http.Request) error {
 	if n.isShuttingDown {
 		return fmt.Errorf("the ingress controller is shutting down")
 	}

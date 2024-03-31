@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package ingresscontroller
 
 import (
 	"bytes"
@@ -47,10 +47,10 @@ import (
 	"k8s.io/ingress-nginx/pkg/tcpproxy"
 
 	adm_controller "k8s.io/ingress-nginx/internal/admission/controller"
-	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
-	"k8s.io/ingress-nginx/internal/ingress/controller/process"
-	"k8s.io/ingress-nginx/internal/ingress/controller/store"
-	ngx_template "k8s.io/ingress-nginx/internal/ingress/controller/template"
+	ngx_config "k8s.io/ingress-nginx/internal/ingress/ingresscontroller/config"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller/process"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller/store"
+	ngx_template "k8s.io/ingress-nginx/internal/ingress/ingresscontroller/template"
 	"k8s.io/ingress-nginx/internal/ingress/metric"
 	"k8s.io/ingress-nginx/internal/ingress/status"
 	ing_net "k8s.io/ingress-nginx/internal/net"
@@ -71,8 +71,8 @@ const (
 	emptyUID         = "-1"
 )
 
-// NewNGINXController creates a new NGINX Ingress controller.
-func NewNGINXController(config *Configuration, mc metric.Collector) *NGINXController {
+// NewIngressController creates a new NGINX Ingress controller.
+func NewIngressController(config *Configuration, mc metric.Collector) *IngressController {
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartLogging(klog.Infof)
 	eventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{
@@ -84,7 +84,7 @@ func NewNGINXController(config *Configuration, mc metric.Collector) *NGINXContro
 		klog.Warningf("Error reading system nameservers: %v", err)
 	}
 
-	n := &NGINXController{
+	n := &IngressController{
 		isIPV6Enabled: ing_net.IsIPv6Enabled(),
 
 		resolver:        h,
@@ -214,8 +214,8 @@ func NewNGINXController(config *Configuration, mc metric.Collector) *NGINXContro
 	return n
 }
 
-// NGINXController describes a NGINX Ingress controller.
-type NGINXController struct {
+// IngressController describes a Ingress controller.
+type IngressController struct {
 	cfg *Configuration
 
 	recorder record.EventRecorder
@@ -260,8 +260,8 @@ type NGINXController struct {
 }
 
 // Start starts a new NGINX master process running in the foreground.
-func (n *NGINXController) Start() {
-	klog.InfoS("Starting NGINX Ingress controller")
+func (n *IngressController) Start() {
+	klog.InfoS("Starting Ingress controller")
 
 	n.store.Run(n.stopCh)
 
@@ -371,7 +371,7 @@ func (n *NGINXController) Start() {
 }
 
 // Stop gracefully stops the NGINX master process.
-func (n *NGINXController) Stop() error {
+func (n *IngressController) Stop() error {
 	n.isShuttingDown = true
 
 	n.stopLock.Lock()
@@ -421,7 +421,7 @@ func (n *NGINXController) Stop() error {
 	return nil
 }
 
-func (n *NGINXController) start(cmd *exec.Cmd) {
+func (n *IngressController) start(cmd *exec.Cmd) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
@@ -436,7 +436,7 @@ func (n *NGINXController) start(cmd *exec.Cmd) {
 }
 
 // DefaultEndpoint returns the default endpoint to be use as default server that returns 404.
-func (n *NGINXController) DefaultEndpoint() ingress.Endpoint {
+func (n *IngressController) DefaultEndpoint() ingress.Endpoint {
 	return ingress.Endpoint{
 		Address: "127.0.0.1",
 		Port:    fmt.Sprintf("%v", n.cfg.ListenPorts.Default),
@@ -447,7 +447,7 @@ func (n *NGINXController) DefaultEndpoint() ingress.Endpoint {
 // generateTemplate returns the nginx configuration file content
 //
 //nolint:gocritic // the cfg shouldn't be changed, and shouldn't be mutated by other processes while being rendered.
-func (n *NGINXController) generateTemplate(cfg ngx_config.Configuration, ingressCfg ingress.Configuration) ([]byte, error) {
+func (n *IngressController) generateTemplate(cfg ngx_config.Configuration, ingressCfg ingress.Configuration) ([]byte, error) {
 	if n.cfg.EnableSSLPassthrough {
 		servers := []*tcpproxy.TCPServer{}
 		for _, pb := range ingressCfg.PassthroughBackends {
@@ -632,7 +632,7 @@ func (n *NGINXController) generateTemplate(cfg ngx_config.Configuration, ingress
 
 // testTemplate checks if the NGINX configuration inside the byte array is valid
 // running the command "nginx -t" using a temporal file.
-func (n *NGINXController) testTemplate(cfg []byte) error {
+func (n *IngressController) testTemplate(cfg []byte) error {
 	if len(cfg) == 0 {
 		return fmt.Errorf("invalid NGINX configuration (empty)")
 	}
@@ -669,7 +669,7 @@ Error: %v
 // Returns nil in case the backend was successfully reloaded.
 //
 //nolint:gocritic // the cfg shouldn't be changed, and shouldn't be mutated by other processes while being rendered.
-func (n *NGINXController) OnUpdate(ingressCfg ingress.Configuration) error {
+func (n *IngressController) OnUpdate(ingressCfg ingress.Configuration) error {
 	cfg := n.store.GetBackendConfiguration()
 	cfg.Resolver = n.resolver
 
@@ -763,7 +763,7 @@ func nextPowerOf2(v int) int {
 	return v
 }
 
-func (n *NGINXController) setupSSLProxy() {
+func (n *IngressController) setupSSLProxy() {
 	cfg := n.store.GetBackendConfiguration()
 	sslPort := n.cfg.ListenPorts.HTTPS
 	proxyPort := n.cfg.ListenPorts.SSLProxy
@@ -812,7 +812,7 @@ func (n *NGINXController) setupSSLProxy() {
 
 // configureDynamically encodes new Backends in JSON format and POSTs the
 // payload to an internal HTTP endpoint handled by Lua.
-func (n *NGINXController) configureDynamically(pcfg *ingress.Configuration) error {
+func (n *IngressController) configureDynamically(pcfg *ingress.Configuration) error {
 	backendsChanged := !reflect.DeepEqual(n.runningConfig.Backends, pcfg.Backends)
 	if backendsChanged {
 		err := configureBackends(pcfg.Backends)

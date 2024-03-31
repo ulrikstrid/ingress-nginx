@@ -26,7 +26,7 @@ import (
 
 	"k8s.io/klog/v2"
 
-	"k8s.io/ingress-nginx/internal/ingress/controller"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller"
 	"k8s.io/ingress-nginx/internal/ingress/metric"
 	"k8s.io/ingress-nginx/internal/nginx"
 	ingressflags "k8s.io/ingress-nginx/pkg/flags"
@@ -81,16 +81,16 @@ func main() {
 		go metrics.RegisterProfiler(nginx.ProfilerAddress, nginx.ProfilerPort)
 	}
 
-	ngx := controller.NewNGINXController(conf, mc)
+	ingressCtr := ingresscontroller.NewIngressController(conf, mc)
 
 	mux := http.NewServeMux()
 	metrics.RegisterHealthz(nginx.HealthPath, mux)
 	metrics.RegisterMetrics(reg, mux)
 
 	go metrics.StartHTTPServer(conf.HealthCheckHost, conf.ListenPorts.Health, mux)
-	go ngx.Start()
+	go ingressCtr.Start()
 
-	process.HandleSigterm(ngx, conf.PostShutdownGracePeriod, func(code int) {
+	process.HandleSigterm(ingressCtr, conf.PostShutdownGracePeriod, func(code int) {
 		os.Exit(code)
 	})
 }

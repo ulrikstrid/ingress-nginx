@@ -26,7 +26,7 @@ import (
 	"github.com/mitchellh/hashstructure/v2"
 
 	"k8s.io/ingress-nginx/internal/ingress/annotations/authreq"
-	"k8s.io/ingress-nginx/internal/ingress/controller/config"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller/config"
 )
 
 func TestFilterErrors(t *testing.T) {

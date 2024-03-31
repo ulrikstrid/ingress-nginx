@@ -50,9 +50,9 @@ import (
 
 	"k8s.io/ingress-nginx/internal/ingress/annotations"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/parser"
-	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
-	"k8s.io/ingress-nginx/internal/ingress/controller/ingressclass"
-	ngx_template "k8s.io/ingress-nginx/internal/ingress/controller/template"
+	ngx_config "k8s.io/ingress-nginx/internal/ingress/ingresscontroller/config"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller/ingressclass"
+	ngx_template "k8s.io/ingress-nginx/internal/ingress/ingresscontroller/template"
 	"k8s.io/ingress-nginx/internal/ingress/defaults"
 	"k8s.io/ingress-nginx/internal/ingress/errors"
 	"k8s.io/ingress-nginx/internal/ingress/resolver"

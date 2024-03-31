@@ -23,7 +23,7 @@ import (
 
 	"github.com/onsi/ginkgo/v2"
 
-	"k8s.io/ingress-nginx/internal/ingress/controller/config"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller/config"
 	"k8s.io/ingress-nginx/test/e2e/framework"
 )
 

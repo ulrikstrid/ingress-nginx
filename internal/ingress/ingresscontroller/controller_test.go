@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package ingresscontroller
 
 import (
 	"context"
@@ -48,9 +48,9 @@ import (
 	"k8s.io/ingress-nginx/internal/ingress/annotations/parser"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/proxyssl"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/sessionaffinity"
-	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
-	"k8s.io/ingress-nginx/internal/ingress/controller/ingressclass"
-	"k8s.io/ingress-nginx/internal/ingress/controller/store"
+	ngx_config "k8s.io/ingress-nginx/internal/ingress/ingresscontroller/config"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller/ingressclass"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller/store"
 	"k8s.io/ingress-nginx/internal/ingress/defaults"
 	"k8s.io/ingress-nginx/internal/ingress/metric"
 	"k8s.io/ingress-nginx/internal/ingress/resolver"
@@ -190,7 +190,7 @@ func TestCheckIngress(t *testing.T) {
 	}
 
 	// Ensure no panic with wrong arguments
-	var nginx *NGINXController
+	var nginx *IngressController
 	if err := nginx.CheckIngress(nil); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -372,7 +372,7 @@ func TestCheckIngress(t *testing.T) {
 
 func TestCheckWarning(t *testing.T) {
 	// Ensure no panic with wrong arguments
-	nginx := &NGINXController{}
+	nginx := &IngressController{}
 
 	nginx.t = fakeTemplate{}
 	nginx.store = &fakeIngressStore{
@@ -2486,7 +2486,7 @@ func testConfigMap(ns string) *corev1.ConfigMap {
 	}
 }
 
-func newNGINXController(t *testing.T) *NGINXController {
+func newNGINXController(t *testing.T) *IngressController {
 	ns := corev1.NamespaceDefault
 
 	clientSet := fake.NewSimpleClientset()
@@ -2540,7 +2540,7 @@ func newNGINXController(t *testing.T) *NGINXController {
 		},
 	}
 
-	return &NGINXController{
+	return &IngressController{
 		store:   storer,
 		cfg:     config,
 		command: NewNginxCommand(),
@@ -2558,7 +2558,7 @@ func fakeX509Cert(dnsNames []string) *x509.Certificate {
 	}
 }
 
-func newDynamicNginxController(t *testing.T, setConfigMap func(string) *corev1.ConfigMap) *NGINXController {
+func newDynamicNginxController(t *testing.T, setConfigMap func(string) *corev1.ConfigMap) *IngressController {
 	ns := corev1.NamespaceDefault
 
 	clientSet := fake.NewSimpleClientset()
@@ -2605,7 +2605,7 @@ func newDynamicNginxController(t *testing.T, setConfigMap func(string) *corev1.C
 		},
 	}
 
-	return &NGINXController{
+	return &IngressController{
 		store:           storer,
 		cfg:             config,
 		command:         NewNginxCommand(),

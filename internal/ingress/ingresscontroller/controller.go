@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package ingresscontroller
 
 import (
 	"fmt"
@@ -37,9 +37,9 @@ import (
 	"k8s.io/ingress-nginx/internal/ingress/annotations/log"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/parser"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/proxy"
-	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
-	"k8s.io/ingress-nginx/internal/ingress/controller/ingressclass"
-	"k8s.io/ingress-nginx/internal/ingress/controller/store"
+	ngx_config "k8s.io/ingress-nginx/internal/ingress/ingresscontroller/config"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller/ingressclass"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller/store"
 	"k8s.io/ingress-nginx/internal/ingress/errors"
 	"k8s.io/ingress-nginx/internal/ingress/inspector"
 	"k8s.io/ingress-nginx/internal/ingress/metric/collectors"
@@ -157,7 +157,7 @@ func getIngressPodZone(svc *apiv1.Service) string {
 }
 
 // GetPublishService returns the Service used to set the load-balancer status of Ingresses.
-func (n *NGINXController) GetPublishService() *apiv1.Service {
+func (n *IngressController) GetPublishService() *apiv1.Service {
 	s, err := n.store.GetService(n.cfg.PublishService)
 	if err != nil {
 		return nil
@@ -169,7 +169,7 @@ func (n *NGINXController) GetPublishService() *apiv1.Service {
 // syncIngress collects all the pieces required to assemble the NGINX
 // configuration file and passes the resulting data structures to the backend
 // (OnUpdate) when a reload is deemed necessary.
-func (n *NGINXController) syncIngress(interface{}) error {
+func (n *IngressController) syncIngress(interface{}) error {
 	n.syncRateLimiter.Accept()
 
 	if n.syncQueue.IsShuttingDown() {
@@ -266,7 +266,7 @@ func (n *NGINXController) syncIngress(interface{}) error {
 // The warnings are going to be used in an admission webhook, and they represent
 // a list of messages that users need to be aware (like deprecation notices)
 // when creating a new ingress object
-func (n *NGINXController) CheckWarning(ing *networking.Ingress) ([]string, error) {
+func (n *IngressController) CheckWarning(ing *networking.Ingress) ([]string, error) {
 	warnings := make([]string, 0)
 
 	deprecatedAnnotations := sets.NewString()
@@ -310,7 +310,7 @@ func (n *NGINXController) CheckWarning(ing *networking.Ingress) ([]string, error
 
 // CheckIngress returns an error in case the provided ingress, when added
 // to the current configuration, generates an invalid configuration
-func (n *NGINXController) CheckIngress(ing *networking.Ingress) error {
+func (n *IngressController) CheckIngress(ing *networking.Ingress) error {
 	startCheck := time.Now().UnixNano() / 1000000
 
 	if ing == nil {
@@ -440,7 +440,7 @@ func (n *NGINXController) CheckIngress(ing *networking.Ingress) error {
 	return nil
 }
 
-func (n *NGINXController) getStreamServices(configmapName string, proto apiv1.Protocol) []ingress.L4Service {
+func (n *IngressController) getStreamServices(configmapName string, proto apiv1.Protocol) []ingress.L4Service {
 	if configmapName == "" {
 		return []ingress.L4Service{}
 	}
@@ -573,7 +573,7 @@ func (n *NGINXController) getStreamServices(configmapName string, proto apiv1.Pr
 
 // getDefaultUpstream returns the upstream associated with the default backend.
 // Configures the upstream to return HTTP code 503 in case of error.
-func (n *NGINXController) getDefaultUpstream() *ingress.Backend {
+func (n *IngressController) getDefaultUpstream() *ingress.Backend {
 	upstream := &ingress.Backend{
 		Name: defUpstreamName,
 	}
@@ -608,7 +608,7 @@ func (n *NGINXController) getDefaultUpstream() *ingress.Backend {
 }
 
 // getConfiguration returns the configuration matching the standard kubernetes ingress
-func (n *NGINXController) getConfiguration(ingresses []*ingress.Ingress) (sets.Set[string], []*ingress.Server, *ingress.Configuration) {
+func (n *IngressController) getConfiguration(ingresses []*ingress.Ingress) (sets.Set[string], []*ingress.Server, *ingress.Configuration) {
 	upstreams, servers := n.getBackendServers(ingresses)
 	var passUpstreams []*ingress.SSLPassthroughBackend
 
@@ -703,7 +703,7 @@ func dropSnippetDirectives(anns *annotations.Ingress, ingKey string) {
 // service name and port are the same.
 //
 //nolint:gocyclo // Ignore function complexity error
-func (n *NGINXController) getBackendServers(ingresses []*ingress.Ingress) ([]*ingress.Backend, []*ingress.Server) {
+func (n *IngressController) getBackendServers(ingresses []*ingress.Ingress) ([]*ingress.Backend, []*ingress.Server) {
 	du := n.getDefaultUpstream()
 	upstreams := n.createUpstreams(ingresses, du)
 	servers := n.createServers(ingresses, upstreams, du)
@@ -993,7 +993,7 @@ func (n *NGINXController) getBackendServers(ingresses []*ingress.Ingress) ([]*in
 
 // createUpstreams creates the NGINX upstreams (Endpoints) for each Service
 // referenced in Ingress rules.
-func (n *NGINXController) createUpstreams(data []*ingress.Ingress, du *ingress.Backend) map[string]*ingress.Backend {
+func (n *IngressController) createUpstreams(data []*ingress.Ingress, du *ingress.Backend) map[string]*ingress.Backend {
 	upstreams := make(map[string]*ingress.Backend)
 	upstreams[defUpstreamName] = du
 
@@ -1138,7 +1138,7 @@ func (n *NGINXController) createUpstreams(data []*ingress.Ingress, du *ingress.B
 
 // getServiceClusterEndpoint returns an Endpoint corresponding to the ClusterIP
 // field of a Service.
-func (n *NGINXController) getServiceClusterEndpoint(svcKey string, backend *networking.IngressBackend) (endpoint ingress.Endpoint, err error) {
+func (n *IngressController) getServiceClusterEndpoint(svcKey string, backend *networking.IngressBackend) (endpoint ingress.Endpoint, err error) {
 	svc, err := n.store.GetService(svcKey)
 	if err != nil {
 		return endpoint, fmt.Errorf("service %q does not exist", svcKey)
@@ -1175,7 +1175,7 @@ func (n *NGINXController) getServiceClusterEndpoint(svcKey string, backend *netw
 }
 
 // serviceEndpoints returns the upstream servers (Endpoints) associated with a Service.
-func (n *NGINXController) serviceEndpoints(svcKey, backendPort string) ([]ingress.Endpoint, error) {
+func (n *IngressController) serviceEndpoints(svcKey, backendPort string) ([]ingress.Endpoint, error) {
 	var upstreams []ingress.Endpoint
 
 	svc, err := n.store.GetService(svcKey)
@@ -1225,7 +1225,7 @@ func (n *NGINXController) serviceEndpoints(svcKey, backendPort string) ([]ingres
 	return upstreams, nil
 }
 
-func (n *NGINXController) getDefaultSSLCertificate() *ingress.SSLCert {
+func (n *IngressController) getDefaultSSLCertificate() *ingress.SSLCert {
 	// read custom default SSL certificate, fall back to generated default certificate
 	if n.cfg.DefaultSSLCertificate != "" {
 		certificate, err := n.store.GetLocalSSLCert(n.cfg.DefaultSSLCertificate)
@@ -1242,7 +1242,7 @@ func (n *NGINXController) getDefaultSSLCertificate() *ingress.SSLCert {
 // createServers builds a map of host name to Server structs from a map of
 // already computed Upstream structs. Each Server is configured with at least
 // one root location, which uses a default backend if left unspecified.
-func (n *NGINXController) createServers(data []*ingress.Ingress,
+func (n *IngressController) createServers(data []*ingress.Ingress,
 	upstreams map[string]*ingress.Backend,
 	du *ingress.Backend,
 ) map[string]*ingress.Server {
@@ -1863,7 +1863,7 @@ func ingressForHostPath(hostname, path string, servers []*ingress.Server) []*net
 	return ingresses
 }
 
-func (n *NGINXController) getStreamSnippets(ingresses []*ingress.Ingress) []string {
+func (n *IngressController) getStreamSnippets(ingresses []*ingress.Ingress) []string {
 	snippets := make([]string, 0, len(ingresses))
 	for _, i := range ingresses {
 		if i.ParsedAnnotations.StreamSnippet == "" {

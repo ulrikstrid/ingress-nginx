@@ -39,7 +39,7 @@ import (
 	"k8s.io/ingress-nginx/internal/ingress/annotations/opentelemetry"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/ratelimit"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/rewrite"
-	"k8s.io/ingress-nginx/internal/ingress/controller/config"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller/config"
 	"k8s.io/ingress-nginx/internal/nginx"
 	"k8s.io/ingress-nginx/pkg/apis/ingress"
 )

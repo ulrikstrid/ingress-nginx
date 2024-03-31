@@ -30,7 +30,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"k8s.io/ingress-nginx/internal/ingress/controller"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller"
 	"k8s.io/ingress-nginx/internal/k8s"
 	"k8s.io/ingress-nginx/internal/nginx"
 	ingressflags "k8s.io/ingress-nginx/pkg/flags"
@@ -105,7 +105,7 @@ func TestHandleSigterm(t *testing.T) {
 	}
 	conf.Client = clientSet
 
-	ngx := controller.NewNGINXController(conf, nil)
+	ngx := ingresscontroller.NewIngressController(conf, nil)
 
 	go process.HandleSigterm(ngx, 10, func(code int) {
 		if code != 1 {

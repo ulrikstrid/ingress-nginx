@@ -37,7 +37,7 @@ import (
 	certutil "k8s.io/client-go/util/cert"
 	"k8s.io/klog/v2"
 
-	"k8s.io/ingress-nginx/internal/ingress/controller"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller"
 	"k8s.io/ingress-nginx/internal/ingress/metric"
 	"k8s.io/ingress-nginx/internal/k8s"
 	"k8s.io/ingress-nginx/internal/net/ssl"
@@ -143,7 +143,7 @@ func main() {
 		go metrics.RegisterProfiler(nginx.ProfilerAddress, nginx.ProfilerPort)
 	}
 
-	ngx := controller.NewNGINXController(conf, mc)
+	ngx := ingresscontroller.NewIngressController(conf, mc)
 
 	mux := http.NewServeMux()
 	metrics.RegisterHealthz(nginx.HealthPath, mux, ngx)

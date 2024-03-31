@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package ingresscontroller
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ import (
 
 	"k8s.io/apiserver/pkg/server/healthz"
 
-	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
+	ngx_config "k8s.io/ingress-nginx/internal/ingress/ingresscontroller/config"
 	"k8s.io/ingress-nginx/internal/nginx"
 	"k8s.io/ingress-nginx/pkg/util/file"
 )
@@ -62,7 +62,7 @@ func TestNginxCheck(t *testing.T) {
 			defer server.Close()
 			server.Start()
 
-			n := &NGINXController{
+			n := &IngressController{
 				cfg: &Configuration{
 					ListenPorts: &ngx_config.ListenPorts{},
 				},

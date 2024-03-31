@@ -28,9 +28,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/parser"
-	"k8s.io/ingress-nginx/internal/ingress/controller"
-	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
-	"k8s.io/ingress-nginx/internal/ingress/controller/ingressclass"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller"
+	ngx_config "k8s.io/ingress-nginx/internal/ingress/ingresscontroller/config"
+	"k8s.io/ingress-nginx/internal/ingress/ingresscontroller/ingressclass"
 	"k8s.io/ingress-nginx/internal/ingress/metric/collectors"
 	"k8s.io/ingress-nginx/internal/ingress/status"
 	ing_net "k8s.io/ingress-nginx/internal/net"
@@ -42,7 +42,7 @@ import (
 // and specific for each component (like webhook, controller and configurer)
 // ParseFlags generates a configuration for Ingress Controller based on the flags
 // provided by users
-func ParseFlags() (bool, *controller.Configuration, error) {
+func ParseFlags() (bool, *ingresscontroller.Configuration, error) {
 	var (
 		flags = pflag.NewFlagSet("", pflag.ExitOnError)
 
@@ -329,7 +329,7 @@ https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-g
 
 	ngx_config.EnableSSLChainCompletion = *enableSSLChainCompletion
 
-	config := &controller.Configuration{
+	config := &ingresscontroller.Configuration{
 		APIServerHost:               *apiserverHost,
 		KubeConfigFile:              *kubeConfigFile,
 		UpdateStatus:                *updateStatus,

@@ -42,7 +42,7 @@ import (
 
 	"k8s.io/ingress-nginx/pkg/apis/ingress"
 
-	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
+	ngx_config "k8s.io/ingress-nginx/internal/ingress/ingresscontroller/config"
 	"k8s.io/ingress-nginx/pkg/util/file"
 
 	klog "k8s.io/klog/v2"

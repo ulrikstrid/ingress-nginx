@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package ingresscontroller
 
 import (
 	"fmt"
@@ -133,7 +133,7 @@ func TestConfigureDynamically(t *testing.T) {
 		Servers:  servers,
 	}
 
-	n := &NGINXController{
+	n := &IngressController{
 		runningConfig: &ingress.Configuration{},
 		cfg:           &Configuration{},
 	}
