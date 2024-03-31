@@ -143,10 +143,10 @@ func main() {
 		go metrics.RegisterProfiler(nginx.ProfilerAddress, nginx.ProfilerPort)
 	}
 
-	ngx := ingresscontroller.NewIngressController(conf, mc)
+	igx := ingresscontroller.NewIngressController(conf, mc)
 
 	mux := http.NewServeMux()
-	metrics.RegisterHealthz(nginx.HealthPath, mux, ngx)
+	metrics.RegisterHealthz(nginx.HealthPath, mux, igx)
 	metrics.RegisterMetrics(reg, mux)
 
 	_, errExists := os.Stat("/chroot")
@@ -156,9 +156,9 @@ func main() {
 	}
 
 	go metrics.StartHTTPServer(conf.HealthCheckHost, conf.ListenPorts.Health, mux)
-	go ngx.Start()
+	go igx.Start()
 
-	process.HandleSigterm(ngx, conf.PostShutdownGracePeriod, func(code int) {
+	process.HandleSigterm(igx, conf.PostShutdownGracePeriod, func(code int) {
 		os.Exit(code)
 	})
 }

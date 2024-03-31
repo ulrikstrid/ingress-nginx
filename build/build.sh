@@ -38,7 +38,7 @@ export GOARCH="${ARCH}"
 TARGETS_DIR="rootfs/bin/${ARCH}"
 echo "Building targets for ${ARCH}, generated targets in ${TARGETS_DIR} directory."
 
-echo "Building ${PKG}/cmd/nginx"
+echo "Building ${PKG}/cmd/controlplane"
 
 ${GO_BUILD_CMD} \
   -trimpath -ldflags="-buildid= -w -s \
@@ -46,7 +46,7 @@ ${GO_BUILD_CMD} \
   -X ${PKG}/version.COMMIT=${COMMIT_SHA} \
   -X ${PKG}/version.REPO=${REPO_INFO}" \
   -buildvcs=false \
-  -o "${TARGETS_DIR}/nginx-ingress-controller" "${PKG}/cmd/nginx"
+  -o "${TARGETS_DIR}/nginx-ingress-controller" "${PKG}/cmd/controlplane"
 
 echo "Building ${PKG}/cmd/dbg"
 

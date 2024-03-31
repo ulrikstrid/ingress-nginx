@@ -63,6 +63,9 @@ only when the flag --apiserver-host is specified.`)
 Takes the form "namespace/name". The controller configures NGINX to forward
 requests to the first port of this Service.`)
 
+		//mode = flags.String("mode", "",
+		//	`Mode to run the controller in, those modes are ingress,gateway,both`)
+
 		ingressClassAnnotation = flags.String("ingress-class", ingressclass.DefaultAnnotationValue,
 			`[IN DEPRECATION] Name of the ingress class this controller satisfies.
 The class of an Ingress object is set using the annotation "kubernetes.io/ingress.class" (deprecated).
@@ -330,9 +333,10 @@ https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-g
 	ngx_config.EnableSSLChainCompletion = *enableSSLChainCompletion
 
 	config := &ingresscontroller.Configuration{
-		APIServerHost:               *apiserverHost,
-		KubeConfigFile:              *kubeConfigFile,
-		UpdateStatus:                *updateStatus,
+		APIServerHost:  *apiserverHost,
+		KubeConfigFile: *kubeConfigFile,
+		UpdateStatus:   *updateStatus,
+		//Mode:                        *mode,
 		ElectionID:                  *electionID,
 		ElectionTTL:                 *electionTTL,
 		EnableProfiling:             *profiling,
